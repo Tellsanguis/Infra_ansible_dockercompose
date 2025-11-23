@@ -1,0 +1,141 @@
+containers:
+  LibreChat:
+    name: Librechat
+    url: https://librechat.tellserv.fr
+    icon: https://raw.githubusercontent.com/selfhst/icons/refs/heads/main/png/librechat.png
+    hide: false
+  6e1a79ad77b9_plex:
+    name: Plex
+    url: https://plex.tellserv.fr
+    icon: https://plex.tellserv.fr/favicon.ico
+    hide: false
+  stirlingpdf:
+    name: Stirlingpdf
+    url: https://stirlingpdf.tellserv.fr
+    icon: https://raw.githubusercontent.com/Stirling-Tools/Stirling-PDF/main/docs/stirling.png
+    hide: false
+  beszel:
+    name: Beszel
+    url: https://beszel.tellserv.fr
+    icon: https://beszel.tellserv.fr/static/icon.svg
+    hide: false
+  audiobookshelf:
+    name: Audiobookshelf
+    url: https://audiobookshelf.tellserv.fr
+    icon: https://audiobookshelf.tellserv.fr/audiobookshelf/favicon.ico
+    hide: false
+  whoogle-search:
+    name: Whoogle
+    url: https://whoogle.tellserv.fr
+    icon: https://whoogle.tellserv.fr/static/img/favicon/apple-icon-57x57.png
+    hide: false
+  blog_ghost:
+    name: Blog
+    url: https://blog.tellserv.fr
+    icon: https://blog.tellserv.fr/favicon.ico
+    hide: false
+  larabouillere_ghost:
+    name: Larabouillere
+    url: https://larabouillere.tellserv.fr
+    icon: https://larabouillere.tellserv.fr/favicon.ico
+    hide: false
+  freshrss:
+    name: Freshrss
+    url: https://freshrss.tellserv.fr
+    icon: https://freshrss.tellserv.fr/../favicon.ico
+    hide: false
+  webdav:
+    name: Webdav
+    url: https://webdav.tellserv.fr
+    icon: mdi:web
+    hide: false
+  gotify:
+    name: Gotify
+    url: https://gotify.tellserv.fr
+    icon: https://gotify.tellserv.fr/static/apple-touch-icon-57x57.png
+    hide: false
+  vikunja-vikunja-1:
+    name: Vikunja
+    url: https://vikunja.tellserv.fr
+    icon: https://vikunja.tellserv.fr/favicon.ico
+    hide: false
+  searxng:
+    name: Searxng
+    url: https://searxng.tellserv.fr
+    icon: https://raw.githubusercontent.com/selfhst/icons/refs/heads/main/png/searxng.png
+    hide: false
+  paperless:
+    name: Paperless
+    url: https://paperless.tellserv.fr
+    icon: https://raw.githubusercontent.com/selfhst/icons/refs/heads/main/png/paperless-ngx.png
+    hide: false
+  pc-builds:
+    name: Pc-builds
+    url: https://pc-builds.tellserv.fr
+    icon: https://pc-builds.tellserv.fr/favicon.ico
+    hide: false
+  clipcascade-clipcascade-1:
+    name: Clipcascade
+    url: https://clipcascade.tellserv.fr
+    icon: https://clipcascade.tellserv.fr/assets/images/logo.png
+    hide: false
+  vaultwarden:
+    name: Vaultwarden
+    url: https://vaultwarden.tellserv.fr
+    icon: https://vaultwarden.tellserv.fr/images/apple-touch-icon.png
+    hide: false
+  yamtrack:
+    name: Yamtrack
+    url: https://yamtrack.tellserv.fr
+    icon: https://yamtrack.tellserv.fr/static/favicon/apple-touch-icon.png
+    hide: false
+  qbittorrent:
+    name: Qbittorrent
+    url: https://qbittorrent.tellserv.fr
+    icon: https://raw.githubusercontent.com/selfhst/icons/refs/heads/main/png/qbittorrent.png
+    hide: false
+  photoprism-photoprism-1:
+    name: Photoprism
+    url: https://photoprism.tellserv.fr
+    icon: https://photoprism.tellserv.fr/static/icons/logo/512.png
+    hide: false
+  pingvin:
+    name: Pingvin
+    url: https://pingvin.tellserv.fr
+    icon: https://pingvin.tellserv.fr/img/favicon.ico
+    hide: false
+  kavita:
+    name: Kavita
+    url: https://kavita.tellserv.fr
+    icon: https://kavita.tellserv.fr/assets/icons/apple-touch-icon.png
+    hide: false
+  glance:
+    name: Glance
+    url: https://tellserv.fr
+    icon: https://tellserv.fr/static/79abad6150/app-icon.png
+    hide: false
+  mobilizon-mobilizon-1:
+    name: Mobilizon
+    url: https://mobilizon.tellserv.fr
+    icon: https://mobilizon.tellserv.fr/img/icons/apple-touch-icon-152x152.png
+    hide: false
+  joal:
+    name: Joal
+    url: https://joal.tellserv.fr
+    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/joal.png
+    hide: false
+  feedropolis-app:
+    name: Feedropolis
+    url: https://feedropolis.tellserv.fr
+    icon: https://raw.githubusercontent.com/selfhst/icons/refs/heads/main/png/rss-com.png
+    hide: false
+  etebase:
+    name: Etesync
+    url: https://etesync.tellserv.fr
+    icon: https://raw.githubusercontent.com/selfhst/icons/refs/heads/main/png/etesync.png
+    hide: false
+  bin:
+    name: Bin
+    url: https://bin.tellserv.fr
+    icon: https://microbin.eu/img/logo-square.png
+    hide: false

@@ -1,0 +1,8 @@
+cd /opt/stacks/crowdsec
+docker compose up -d
+alias cscli='docker exec -it crowdsec cscli'
+Pour persistance :
+echo "alias cscli='docker exec -it crowdsec cscli'" >> ~/.bashrc
+source ~/.bashrc
+
+cscli bouncers add traefik-bouncer

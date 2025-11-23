@@ -1,0 +1,44 @@
+services:
+  mobilizon:
+    user: "1000:1000"
+    restart: always
+    image: docker.io/framasoft/mobilizon
+    env_file: .env
+    depends_on:
+      - db
+    volumes:
+      - ./uploads:/var/lib/mobilizon/uploads
+      - ./tzdata:/var/lib/mobilizon/tzdata
+    networks:
+      - traefik_network
+      - mobilizon_internal
+    labels:
+      - "traefik.enable=true"
+      # Local
+      - "traefik.http.routers.mobilizon-local.rule=Host(`mobilizon.local.tellserv.fr`)"
+      - "traefik.http.routers.mobilizon-local.entryPoints=local"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls.certresolver=cloudflare-local"
+      - "traefik.http.routers.mobilizon-local.tls=true"
+      # Production
+      - "traefik.http.routers.mobilizon-prod.rule=Host(`mobilizon.tellserv.fr`)"
+      - "traefik.http.routers.mobilizon-prod.entryPoints=websecure"
+      - "traefik.http.routers.mobilizon-prod.tls=true"
+      - "traefik.http.routers.mobilizon-prod.tls.certResolver=cloudflare"
+      # Port interne du service
+      - "traefik.http.services.mobilizon.loadbalancer.server.port=5005"
+
+  db:
+    image: docker.io/postgis/postgis:15-3.4
+    restart: always
+    env_file: .env
+    volumes:
+      - ./db:/var/lib/postgresql/data:z
+    networks:
+      - mobilizon_internal
+
+networks:
+  mobilizon_internal:
+    ipam:
+      driver: default
+  traefik_network:
+    external: true

@@ -1,0 +1,53 @@
+services:
+  microbin:
+    image: danielszabo99/microbin:2.4.1
+    container_name: ${COMPOSE_PROJECT_NAME}
+    restart: unless-stopped
+    environment:
+      MICROBIN_EDITABLE: ${MICROBIN_EDITABLE}
+      MICROBIN_HIDE_FOOTER: ${MICROBIN_HIDE_FOOTER}
+      MICROBIN_HIDE_HEADER: ${MICROBIN_HIDE_HEADER}
+      MICROBIN_HIDE_LOGO: ${MICROBIN_HIDE_LOGO}
+      MICROBIN_NO_LISTING: ${MICROBIN_NO_LISTING}
+      MICROBIN_HIGHLIGHTSYNTAX: ${MICROBIN_HIGHLIGHTSYNTAX}
+      MICROBIN_BIND: 0.0.0.0
+      MICROBIN_PRIVATE: ${MICROBIN_PRIVATE}
+      MICROBIN_DATA_DIR: microbin_data
+      MICROBIN_JSON_DB: ${MICROBIN_JSON_DB}
+      MICROBIN_TITLE: ${MICROBIN_TITLE}
+      MICROBIN_THREADS: ${MICROBIN_THREADS}
+      MICROBIN_GC_DAYS: ${MICROBIN_GC_DAYS}
+      MICROBIN_ENABLE_BURN_AFTER: ${MICROBIN_ENABLE_BURN_AFTER}
+      MICROBIN_DEFAULT_BURN_AFTER: ${MICROBIN_DEFAULT_BURN_AFTER}
+      MICROBIN_WIDE: ${MICROBIN_WIDE}
+      MICROBIN_QR: ${MICROBIN_QR}
+      MICROBIN_ENCRYPTION_CLIENT_SIDE: ${MICROBIN_ENCRYPTION_CLIENT_SIDE}
+      MICROBIN_ENCRYPTION_SERVER_SIDE: ${MICROBIN_ENCRYPTION_SERVER_SIDE}
+      MICROBIN_MAX_FILE_SIZE_ENCRYPTED_MB: ${MICROBIN_MAX_FILE_SIZE_ENCRYPTED_MB}
+      MICROBIN_MAX_FILE_SIZE_UNENCRYPTED_MB: ${MICROBIN_MAX_FILE_SIZE_UNENCRYPTED_MB}
+      MICROBIN_DISABLE_UPDATE_CHECKING: true
+      MICROBIN_DISABLE_TELEMETRY: true
+    volumes:
+      - /mnt/storage/microbin-data:/app/microbin_data
+    networks:
+      - traefik_network
+    labels:
+      - traefik.enable=true
+      # --- Local
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.rule=Host(`${COMPOSE_PROJECT_NAME}.local.tellserv.fr`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.entryPoints=local
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls.certresolver=cloudflare-local"
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls=true
+      # --- Prod avec TinyAuth
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.rule=Host(`${COMPOSE_PROJECT_NAME}.tellserv.fr`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.entryPoints=websecure
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls.certResolver=cloudflare
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.middlewares=tinyauth
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=8080
+      # --- Flame Dashboard Integration
+      # --- Watchtower Auto-Update
+      - com.centurylinklabs.watchtower.enable=true
+networks:
+  traefik_network:
+    external: true

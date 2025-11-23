@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+<channel>
+  <title>Updates serveur</title>
+  <link>http://rss/index.xml</link>
+  <description>Changelog des services Tellserv</description>
+  <item>
+    <title>Changement d'infra : 2 instances Traefik, une par interface réseau (Interne / Externe).</title>
+    <link>http://rss/index.xml#changement-d'infra-:-2-instances-traefik,-une-par-interface-réseau-(interne-/-externe).</link>
+    <pubDate>Sun, 01 Jun 2025 12:00:00 GMT</pubDate>
+    <description>Une instance Traefik permet d'exposer sur *.tellserv.fr et l'autre sert pour les services externes afin de permettre un meilleur cloisonnement.</description>
+  </item>
+  <item>
+    <title>Glance remplace Flame : Nouveau dashboard, détection auto des services, widget Plex.</title>
+    <link>http://rss/index.xml#glance-remplace-flame-:-nouveau-dashboard,-détection-auto-des-services,-widget-plex.</link>
+    <pubDate>Sat, 24 May 2025 12:00:00 GMT</pubDate>
+    <description>Ajout d’un script pour détecter automatiquement les services exposés, et intégration d’un widget Plex affichant les différentes bibliothèques et leur nombre de médias.</description>
+  </item>
+  <item>
+    <title>Nouvelle collection Plex : Films non vus choisis au hasard.</title>
+    <link>http://rss/index.xml#nouvelle-collection-plex-:-films-non-vus-choisis-au-hasard.</link>
+    <pubDate>Fri, 23 May 2025 12:00:00 GMT</pubDate>
+    <description>Une collection aléatoire a été ajoutée sur Plex, permettant de voir un film non vu encore.</description>
+  </item>
+  <item>
+    <title>Relance des services restants : Minecraft, Photoprism...</title>
+    <link>http://rss/index.xml#relance-des-services-restants-:-minecraft,-photoprism...</link>
+    <pubDate>Fri, 09 May 2025 12:00:00 GMT</pubDate>
+    <description>Les derniers services encore non fonctionnels, comme le serveur Minecraft, sont relancés.</description>
+  </item>
+  <item>
+    <title>Notifications via Gotify : Mise en place d’un système d’alertes centralisé.</title>
+    <link>http://rss/index.xml#notifications-via-gotify-:-mise-en-place-d’un-système-d’alertes-centralisé.</link>
+    <pubDate>Wed, 07 May 2025 12:00:00 GMT</pubDate>
+    <description>Mise en place du système de notifications centralisé avec Gotify.</description>
+  </item>
+  <item>
+    <title>Migration vers Proxmox : Serveur déplacé dans une VM Proxmox.</title>
+    <link>http://rss/index.xml#migration-vers-proxmox-:-serveur-déplacé-dans-une-vm-proxmox.</link>
+    <pubDate>Tue, 06 May 2025 12:00:00 GMT</pubDate>
+    <description>Migration complète du serveur principal dans une machine virtuelle sous Proxmox.</description>
+  </item>
+</channel>
+</rss>

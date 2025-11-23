@@ -1,0 +1,28 @@
+services:
+  freshrss:
+    image: freshrss/freshrss:1.26.2
+    container_name: freshrss
+    environment:
+      - TZ=Europe/Paris
+      - CRON_MIN=13,43
+    volumes:
+      - /mnt/storage/freshrss/data:/var/www/FreshRSS/data
+      - /mnt/storage/freshrss/extensions:/var/www/FreshRSS/extensions
+    networks:
+      - traefik_network
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.freshrss-local.rule=Host(`freshrss.local.tellserv.fr`)
+      - traefik.http.routers.freshrss-local.entryPoints=local
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls.certresolver=cloudflare-local
+      - traefik.http.routers.freshrss-local.tls=true
+      - traefik.http.routers.freshrss-prod.rule=Host(`freshrss.tellserv.fr`)
+      - traefik.http.routers.freshrss-prod.entryPoints=websecure
+      - traefik.http.routers.freshrss-prod.tls=true
+      - traefik.http.routers.freshrss-prod.tls.certResolver=cloudflare
+      - traefik.http.services.freshrss.loadbalancer.server.port=80
+      - com.centurylinklabs.watchtower.enable=true
+networks:
+  traefik_network:
+    external: true

@@ -1,0 +1,66 @@
+services:
+  glance:
+    container_name: glance
+    image: glanceapp/glance:v0.7.5
+    restart: unless-stopped
+    volumes:
+      - ./config:/app/config
+      - ./assets:/app/assets
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /mnt/storage:/mnt/storage:ro
+    env_file: .env
+    networks:
+      - traefik_network
+      - internal_glance
+    secrets:
+      - plex-token
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.rule=Host(`tellserv.fr`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.entryPoints=websecure"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls.certResolver=cloudflare"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=8080"
+
+  glance-containers-builder:
+    build: ./container-builder
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config/includes:/output
+      - ./container-builder:/app/config
+    restart: unless-stopped
+    networks:
+      - internal_glance
+    entrypoint: >
+      sh -c "pip install docker pyyaml requests beautifulsoup4 && while true; do python3 /app/generate_containers_block.py && sleep 60; done"
+
+  rss:
+    container_name: glance-rss
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - ./rss:/usr/share/nginx/html:ro
+    networks:
+      - internal_glance
+
+  rss-builder:
+    build: ./rss-builder
+    container_name: rss-builder
+    restart: unless-stopped
+    volumes:
+      - ./updates:/updates:ro
+      - ./rss:/rss
+    networks:
+      - internal_glance
+    entrypoint: >
+      sh -c "while true; do python3 /app/generate_rss.py && sleep 60; done"
+
+networks:
+  traefik_network:
+    external: true
+  internal_glance:
+    name: glance_internal
+
+secrets:
+  plex-token:
+    file: ./config/secrets/plex-token.txt

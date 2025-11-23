@@ -1,0 +1,25 @@
+services:
+  watchtower:
+    image: containrrr/watchtower:1.7.1
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - TZ=Europe/Paris
+      # Mode monitor-only : ne met pas à jour, notifie seulement
+      - WATCHTOWER_MONITOR_ONLY=true
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_INCLUDE_RESTARTING=true
+      - WATCHTOWER_LABEL_ENABLE=true
+      - WATCHTOWER_POLL_INTERVAL=43200  # 12h
+      # Notifications via Gotify
+      - WATCHTOWER_NOTIFICATIONS=gotify
+      - WATCHTOWER_NOTIFICATION_GOTIFY_URL=${WATCHTOWER_GOTIFY_URL}
+      - WATCHTOWER_NOTIFICATION_GOTIFY_TOKEN=${WATCHTOWER_GOTIFY_TOKEN}
+    networks:
+      - traefik_network
+    restart: unless-stopped
+
+networks:
+  traefik_network:
+    external: true

@@ -1,0 +1,6 @@
+name: whitelist
+description: "Whitelist my server public IP"
+whitelist:
+  reason: "Public IP of my server"
+  ip:
+    - 93.19.127.133

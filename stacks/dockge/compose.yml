@@ -1,0 +1,25 @@
+services:
+  dockge:
+    image: louislam/dockge:1
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data:/app/data
+      - /opt/stacks:/opt/stacks
+    environment:
+      - DOCKGE_STACKS_DIR=/opt/stacks
+    networks:
+      - traefik_network
+    labels:
+      - "traefik.enable=true"
+      # Local
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.rule=Host(`${COMPOSE_PROJECT_NAME}.local.tellserv.fr`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.entryPoints=local"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls.certresolver=cloudflare-local"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls=true"
+      # Port interne du service
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=5001"
+
+networks:
+  traefik_network:
+    external: true

@@ -1,0 +1,59 @@
+services:
+  # One-shot: applique l'ACL au dossier host monté (uid/gid 33 = www-data)
+  acl-init:
+    image: alpine:3.20
+    container_name: ${COMPOSE_PROJECT_NAME:-webdav}-acl-init
+    command: >
+      /bin/sh -lc "
+      apk add --no-cache acl &&
+      setfacl -m u:33:rwx,g:33:rwx -m d:u:33:rwx,d:g:33:rwx /target &&
+      ls -ld /target &&
+      echo 'ACL applied for uid/gid 33 on /target'
+      "
+    volumes:
+      - /mnt/storage/phone_backup:/target
+    restart: "no"
+
+  webdav:
+    image: maltokyo/docker-nginx-webdav:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-webdav}
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Paris
+    volumes:
+      - /mnt/storage/phone_backup:/media/data
+    depends_on:
+      acl-init:
+        condition: service_completed_successfully
+    networks:
+      - traefik_network
+    labels:
+      - traefik.enable=true
+
+      # --- Router local ---
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.rule=Host(`${COMPOSE_PROJECT_NAME}.local.tellserv.fr`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.entryPoints=local
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls.certresolver=cloudflare-local
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.middlewares=${COMPOSE_PROJECT_NAME}-auth
+
+      # --- Router prod ---
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.rule=Host(`${COMPOSE_PROJECT_NAME}.tellserv.fr`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.entryPoints=websecure
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls.certResolver=cloudflare
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.middlewares=${COMPOSE_PROJECT_NAME}-auth
+
+      # --- Service backend (l'image écoute sur 80) ---
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=80
+
+      # --- BasicAuth via Traefik ---
+      - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-auth.basicauth.removeheader=true
+      - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-auth.basicauth.users=${BASIC_AUTH_USER}:${BASIC_AUTH_PASS_HASH}
+
+      # Watchtower (optionnel)
+      - com.centurylinklabs.watchtower.enable=true
+
+networks:
+  traefik_network:
+    external: true

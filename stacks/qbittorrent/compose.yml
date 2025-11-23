@@ -1,0 +1,42 @@
+services:
+  qbittorrent:
+    image: trigus42/qbittorrentvpn:qbt4.6.7
+    container_name: qbittorrent
+    environment:
+    - PUID=1000
+    - PGID=1000
+    - TZ=Europe/Paris
+    - VPN_ENABLED=yes
+    - VPN_TYPE=wireguard
+    - BIND_INTERFACE=yes
+    - HEALTH_CHECK_TIMEOUT=30
+    - HEALTH_CHECK_INTERVAL=30
+    volumes:
+    - /mnt/storage/deluge:/config
+    - /mnt/storage/downloads:/downloads
+    - /mnt/storage/plex/movies:/movies
+    - /mnt/storage/plex/tv:/tv
+    - /mnt/storage/kavita/download:/books
+    - /mnt/storage/audiobookshelf/audiobooks:/audiobooks
+    cap_add:
+    - NET_ADMIN
+    sysctls:
+    - net.ipv4.conf.all.src_valid_mark=1
+    networks:
+    - traefik_network
+    restart: unless-stopped
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.rule=Host(`${COMPOSE_PROJECT_NAME}.local.tellserv.fr`)
+    - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.entryPoints=local
+    - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls.certresolver=cloudflare-local"
+    - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls=true
+    - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.rule=Host(`${COMPOSE_PROJECT_NAME}.tellserv.fr`)
+    - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.entryPoints=websecure
+    - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls=true
+    - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls.certResolver=cloudflare
+    - traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=8080
+    - com.centurylinklabs.watchtower.enable=true
+networks:
+  traefik_network:
+    external: true

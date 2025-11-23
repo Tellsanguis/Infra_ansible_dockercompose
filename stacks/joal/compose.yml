@@ -1,0 +1,35 @@
+services:
+  joal:
+    image: anthonyraymond/joal:3.1.0
+    container_name: joal
+    restart: unless-stopped
+    volumes:
+      - /mnt/storage/joal-conf:/data
+    command:
+      - --joal-conf=/data
+      - --spring.main.web-environment=true
+      - --server.port=8383
+      - --joal.ui.path.prefix=joal
+      - --joal.ui.secret-token=${JOAL_SECRET_TOKEN}
+    networks:
+      - traefik_network
+    labels:
+      - traefik.enable=true
+      # Local
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.rule=Host(`${COMPOSE_PROJECT_NAME}.local.tellserv.fr`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.entryPoints=local
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls.certresolver=cloudflare-local"
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls=true
+      # Production
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.rule=Host(`${COMPOSE_PROJECT_NAME}.tellserv.fr`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.entryPoints=websecure
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls.certResolver=cloudflare
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.middlewares=tinyauth
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=8383
+      # Flame Dashboard Integration
+      # Watchtower Auto-Update
+      - com.centurylinklabs.watchtower.enable=true
+networks:
+  traefik_network:
+    external: true

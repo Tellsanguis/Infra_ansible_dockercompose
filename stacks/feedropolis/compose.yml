@@ -1,0 +1,42 @@
+services:
+  app:
+    image: docker.io/stormworks/feedropolis
+    container_name: feedropolis-app
+    privileged: true
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@feedropolis-db:5432/feed
+      - BASE_URL=https://feedropolis.tellserv.fr/
+      - DEBUG=
+    networks:
+      - traefik_network
+      - feedropolis_network
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.rule=Host(`${COMPOSE_PROJECT_NAME}.local.tellserv.fr`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.entryPoints=local
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls.certresolver=cloudflare-local"
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.rule=Host(`${COMPOSE_PROJECT_NAME}.tellserv.fr`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.entryPoints=websecure
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls.certResolver=cloudflare
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.middlewares=tinyauth
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=3000
+      - com.centurylinklabs.watchtower.enable=true
+
+  db:
+    image: docker.io/library/postgres:12
+    container_name: feedropolis-db
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - feedropolis_network
+    restart: unless-stopped
+
+networks:
+  traefik_network:
+    external: true
+  feedropolis_network:
+    driver: bridge

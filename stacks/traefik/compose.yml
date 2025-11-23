@@ -1,0 +1,62 @@
+services:
+  traefik-public:
+    image: traefik:v3
+    container_name: traefik-public
+    restart: unless-stopped
+    ports:
+      - "192.168.1.2:80:80"
+      - "192.168.1.2:443:443"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik-public.yml:/etc/traefik/traefik.yml:ro
+      - ./dynamic-public:/etc/traefik/dynamic:ro
+      - ./letsencrypt-public:/letsencrypt
+      - /var/log/traefik:/var/log/traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard-public.rule=Host(`traefik-public.local.tellserv.fr`)"
+      - "traefik.http.routers.traefik-dashboard-public.entrypoints=local"
+      - "traefik.http.routers.traefik-dashboard-public.tls.certresolver=cloudflare-local"
+      - "traefik.http.routers.traefik-dashboard-public.tls=true"
+      - "traefik.http.routers.traefik-dashboard-public.service=api@internal"
+      - "traefik.http.middlewares.crowdsec-bouncer.forwardauth.address=http://crowdsec-bouncer:8080/api/v1/forwardAuth"
+      - "traefik.http.middlewares.crowdsec-bouncer.forwardauth.trustForwardHeader=true"
+    environment:
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+      - TZ=Europe/Paris
+
+  traefik-private:
+    image: traefik:v3
+    container_name: traefik-private
+    restart: unless-stopped
+    ports:
+      - "192.168.1.3:80:80"
+      - "192.168.1.3:443:443"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik-private.yml:/etc/traefik/traefik.yml:ro
+      - ./dynamic-private:/etc/traefik/dynamic:ro
+      - ./letsencrypt-private:/letsencrypt
+      - /var/log/traefik-local:/var/log/traefik-local
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard-local.rule=Host(`traefik-private.local.tellserv.fr`)"
+      - "traefik.http.routers.traefik-dashboard-local.entrypoints=local"
+      - "traefik.http.routers.traefik-dashboard-local.tls.certresolver=cloudflare-local"
+      - "traefik.http.routers.traefik-dashboard-local.tls=true"
+      - "traefik.http.routers.traefik-dashboard-local.service=api@internal"
+    environment:
+      - TZ=Europe/Paris
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+
+networks:
+  traefik_network:
+    external: true

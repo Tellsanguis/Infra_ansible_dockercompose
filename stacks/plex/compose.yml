@@ -1,0 +1,47 @@
+services:
+  plex:
+    image: lscr.io/linuxserver/plex:1.41.3
+    container_name: plex
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Paris
+      - VERSION=docker
+      - PLEX_CLAIM=claim-FRzbiufBZ8swT2iK5Q7W
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - /mnt/storage/plex/config:/config
+      - /mnt/storage/plex/tv:/tv
+      - /mnt/storage/plex/movies:/movies
+    networks:
+      - traefik_network
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.rule=Host(`${COMPOSE_PROJECT_NAME}.local.tellserv.fr`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.entryPoints=local
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls.certresolver=cloudflare-local
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.rule=Host(`${COMPOSE_PROJECT_NAME}.tellserv.fr`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.entryPoints=websecure
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls.certResolver=cloudflare
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=32400
+      - com.centurylinklabs.watchtower.enable=true
+  plexautolanguages:
+    image: journeyover/plex-auto-languages:main
+    environment:
+      - PLEX_URL=https://${COMPOSE_PROJECT_NAME}.tellserv.fr
+      - PLEX_TOKEN=${PLEX_TOKEN}
+      - TZ=Europe/Paris
+    volumes:
+      - ./config:/config
+    networks:
+      - traefik_network
+    restart: unless-stopped
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+networks:
+  traefik_network:
+    external: true

@@ -1,0 +1,59 @@
+services:
+  # Reverse proxy Traefik : déjà déployé ailleurs chez toi
+  # (Ce stack n'inclut PAS Traefik ; on ne fait qu'y raccorder SearXNG.)
+
+  redis:
+    container_name: redis
+    image: docker.io/valkey/valkey:8-alpine
+    command: valkey-server --save 30 1 --loglevel warning
+    restart: unless-stopped
+    networks:
+      - searxng
+    volumes:
+      - valkey-data2:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: 1m
+        max-file: "1"
+    # NOTE hôte: activer vm.overcommit_memory=1 (sysctl) pour éviter les warnings.
+
+  searxng:
+    container_name: searxng
+    image: docker.io/searxng/searxng:2024.11.17-41079cdde
+    restart: unless-stopped
+    networks:
+      - searxng
+      - traefik_network
+    # Pas de "ports:" ici : Traefik s'occupe de l'exposition
+    volumes:
+      - ./searxng:/etc/searxng:rw
+      - searxng-data:/var/cache/searxng:rw
+    environment:
+      # Base URL utilisée par SearXNG pour générer ses liens
+      - SEARXNG_BASE_URL=https://searxng.tellserv.fr
+      # Secret via .env (réf. dans settings.yml)
+      - SEARXNG_SECRET=${SEARXNG_SECRET}
+    labels:
+      - traefik.enable=true
+      # Réseau docker que Traefik doit utiliser pour joindre ce service
+      - traefik.docker.network=traefik_network
+      # Routeur HTTPS (prod)
+      - traefik.http.routers.searxng-prod.rule=Host(`searxng.tellserv.fr`)
+      - traefik.http.routers.searxng-prod.entrypoints=websecure
+      - traefik.http.routers.searxng-prod.tls=true
+      - traefik.http.routers.searxng-prod.tls.certresolver=cloudflare
+      # Service interne : SearXNG écoute en 8080
+      - traefik.http.services.searxng.loadbalancer.server.port=8080
+    logging:
+      driver: json-file
+      options:
+        max-size: 1m
+        max-file: "1"
+networks:
+  searxng: null
+  traefik_network:
+    external: true
+volumes:
+  valkey-data2: null
+  searxng-data: null

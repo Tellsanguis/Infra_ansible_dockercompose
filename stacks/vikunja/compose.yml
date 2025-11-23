@@ -1,0 +1,30 @@
+services:
+  vikunja:
+    image: vikunja/vikunja:0.24.6
+    environment:
+      - VIKUNJA_SERVICE_JWTSECRET=${VIKUNJA_SERVICE_JWTSECRET}
+      - VIKUNJA_SERVICE_PUBLICURL=https://vikunja.tellserv.fr/
+      - VIKUNJA_DATABASE_PATH=/db/vikunja.db
+      - VIKUNJA_SERVICE_ENABLEREGISTRATION=false
+    volumes:
+      - /mnt/storage/vikunja/files:/app/vikunja/files
+      - /mnt/storage/vikunja/db:/db
+    networks:
+      - traefik_network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.rule=Host(`${COMPOSE_PROJECT_NAME}.local.tellserv.fr`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.entryPoints=local"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls.certresolver=cloudflare-local"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.rule=Host(`${COMPOSE_PROJECT_NAME}.tellserv.fr`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.entryPoints=websecure"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls.certResolver=cloudflare"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=3456"
+      - "com.centurylinklabs.watchtower.enable=true"
+
+networks:
+  traefik_network:
+    external: true

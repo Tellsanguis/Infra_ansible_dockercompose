@@ -1,0 +1,91 @@
+services:
+  photoprism:
+    image: photoprism/photoprism:241021
+    stop_grace_period: 10s
+    depends_on:
+      - mariadb
+    restart: unless-stopped
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+    working_dir: "/photoprism"
+    volumes:
+      - "/mnt/storage/photos:/photoprism/import"
+      - "/mnt/storage/photoprism/originals:/photoprism/originals"
+      - "/mnt/storage/photoprism/storage:/photoprism/storage"
+    environment:
+      - PHOTOPRISM_DATABASE_DRIVER=mysql
+      - PHOTOPRISM_DATABASE_SERVER=mariadb:3306
+      - PHOTOPRISM_DATABASE_NAME=photoprism
+      - PHOTOPRISM_DATABASE_USER=${MARIADB_USER}
+      - PHOTOPRISM_DATABASE_PASSWORD=${PHOTOPRISM_DATABASE_PASSWORD}
+      - PHOTOPRISM_ADMIN_USER=${PHOTOPRISM_ADMIN_USER}
+      - PHOTOPRISM_ADMIN_PASSWORD=${PHOTOPRISM_ADMIN_PASSWORD}
+      - PHOTOPRISM_AUTH_MODE=password
+      - PHOTOPRISM_SITE_URL=https://photoprism.tellserv.fr/
+      - PHOTOPRISM_DISABLE_TLS=true
+      - PHOTOPRISM_ORIGINALS_LIMIT=5000
+      - PHOTOPRISM_HTTP_COMPRESSION=gzip
+      - PHOTOPRISM_LOG_LEVEL=info
+      - PHOTOPRISM_READONLY=false
+      - PHOTOPRISM_EXPERIMENTAL=false
+      - PHOTOPRISM_DISABLE_CHOWN=false
+      - PHOTOPRISM_DISABLE_WEBDAV=false
+      - PHOTOPRISM_DISABLE_SETTINGS=false
+      - PHOTOPRISM_DISABLE_TENSORFLOW=false
+      - PHOTOPRISM_DISABLE_FACES=false
+      - PHOTOPRISM_DISABLE_CLASSIFICATION=false
+      - PHOTOPRISM_DISABLE_VECTORS=false
+      - PHOTOPRISM_DISABLE_RAW=false
+      - PHOTOPRISM_RAW_PRESETS=false
+      - PHOTOPRISM_JPEG_QUALITY=85
+      - PHOTOPRISM_DETECT_NSFW=false
+      - PHOTOPRISM_UPLOAD_NSFW=true
+      - PHOTOPRISM_SITE_CAPTION=AI-Powered Photos App
+      - PHOTOPRISM_SITE_DESCRIPTION=
+      - PHOTOPRISM_SITE_AUTHOR=
+    networks:
+      - traefik_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.rule=Host(`${COMPOSE_PROJECT_NAME}.local.tellserv.fr`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.entryPoints=local"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls.certresolver=cloudflare-local"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.rule=Host(`${COMPOSE_PROJECT_NAME}.tellserv.fr`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.entryPoints=websecure"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls.certResolver=cloudflare"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=2342"
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  mariadb:
+    image: mariadb:11
+    restart: unless-stopped
+    stop_grace_period: 5s
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+    command: >
+      --innodb-buffer-pool-size=512M
+      --transaction-isolation=READ-COMMITTED
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --max-connections=512
+      --innodb-rollback-on-timeout=OFF
+      --innodb-lock-wait-timeout=120
+    volumes:
+      - ./database:/var/lib/mysql
+    environment:
+      - MARIADB_AUTO_UPGRADE=1
+      - MARIADB_INITDB_SKIP_TZINFO=1
+      - MARIADB_DATABASE=photoprism
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+    networks:
+      - traefik_network
+
+networks:
+  traefik_network:
+    external: true

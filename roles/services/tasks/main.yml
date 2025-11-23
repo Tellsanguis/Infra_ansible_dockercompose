@@ -1,0 +1,222 @@
+# =============================================================================
+# Generate .env files from templates (secrets from Vault)
+# =============================================================================
+
+- name: Générer les fichiers .env depuis les templates
+  ansible.builtin.template:
+    src: "{{ playbook_dir }}/templates/env/{{ item }}.env.j2"
+    dest: "{{ playbook_dir }}/stacks/{{ item }}/.env"
+    mode: '0600'
+  loop:
+    - traefik
+    - tinyauth
+    - vaultwarden
+    - crowdsec
+    - photoprism
+    - vikunja
+    - mobilizon
+    - etesync
+    - plex
+    - yamtrack
+    - joal
+    - feedropolis
+    - webdav
+    - searxng
+    - glance
+    - watchtower
+  delegate_to: localhost
+  become: no
+  tags:
+    - env
+    - secrets
+
+# =============================================================================
+# Sync stacks to server
+# =============================================================================
+
+- name: Synchroniser le dossier stacks depuis la machine de gestion
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/stacks/"
+    dest: /opt/stacks/
+    mode: preserve
+  become: yes
+  tags:
+    - sync
+    - deploy
+
+# =============================================================================
+# Deploy all stacks
+# =============================================================================
+
+- name: Chercher tous les fichiers compose.yml
+  ansible.builtin.find:
+    paths: /opt/stacks
+    patterns: "compose.yml,compose.yaml"
+    recurse: yes
+  register: compose_files
+  tags:
+    - deploy
+
+- name: Vérifier si les containers existent déjà
+  ansible.builtin.shell: docker ps -a --format {% raw %}"{{.Names}}"{% endraw %}
+  register: existing_containers
+  changed_when: false
+  tags:
+    - deploy
+
+- name: Arrêter et supprimer les conteneurs existants si nécessaire
+  ansible.builtin.command:
+    cmd: docker compose down
+    chdir: "{{ item.path | dirname }}"
+  loop: "{{ compose_files.files }}"
+  loop_control:
+    label: "{{ item.path | dirname | basename }}"
+  when: item.path | dirname | basename in existing_containers.stdout_lines
+  ignore_errors: yes
+  tags:
+    - deploy
+
+- name: Mettre à jour les images
+  ansible.builtin.command:
+    cmd: docker compose pull
+    chdir: "{{ item.path | dirname }}"
+  loop: "{{ compose_files.files }}"
+  loop_control:
+    label: "{{ item.path | dirname | basename }}"
+  tags:
+    - deploy
+    - pull
+
+- name: Déployer chaque stack via docker compose
+  ansible.builtin.command:
+    cmd: docker compose up -d --build
+    chdir: "{{ item.path | dirname }}"
+  loop: "{{ compose_files.files }}"
+  loop_control:
+    label: "{{ item.path | dirname | basename }}"
+  tags:
+    - deploy
+
+# =============================================================================
+# Individual stack deployment tasks (use with --tags <stack_name>)
+# =============================================================================
+
+- name: Déployer Traefik
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/traefik
+  tags: [traefik, never]
+
+- name: Déployer CrowdSec
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/crowdsec
+  tags: [crowdsec, never]
+
+- name: Déployer Vaultwarden
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/vaultwarden
+  tags: [vaultwarden, never]
+
+- name: Déployer TinyAuth
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/tinyauth
+  tags: [tinyauth, never]
+
+- name: Déployer Photoprism
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/photoprism
+  tags: [photoprism, never]
+
+- name: Déployer Vikunja
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/vikunja
+  tags: [vikunja, never]
+
+- name: Déployer Mobilizon
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/mobilizon
+  tags: [mobilizon, never]
+
+- name: Déployer Plex
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/plex
+  tags: [plex, never]
+
+- name: Déployer Kavita
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/kavita
+  tags: [kavita, never]
+
+- name: Déployer Glance
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/glance
+  tags: [glance, never]
+
+- name: Déployer Uptime-Kuma
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/uptime-kuma
+  tags: [uptime-kuma, never]
+
+- name: Déployer Gotify
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/gotify
+  tags: [gotify, never]
+
+- name: Déployer Paperless
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/paperless
+  tags: [paperless, never]
+
+- name: Déployer FreshRSS
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/freshrss
+  tags: [freshrss, never]
+
+- name: Déployer SearXNG
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/searxng
+  tags: [searxng, never]
+
+- name: Déployer Headscale
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/headscale
+  tags: [headscale, never]
+
+- name: Déployer Kopia
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/kopia
+  tags: [kopia, never]
+
+- name: Déployer Blog
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/blog
+  tags: [blog, never]
+
+- name: Déployer Larabouillere
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/larabouillere
+  tags: [larabouillere, never]
+
+- name: Déployer Watchtower
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/stacks/watchtower
+  tags: [watchtower, never]
