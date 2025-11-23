@@ -136,7 +136,7 @@ ansible-playbook -i inventory/hosts.yml playbook.yml --tags traefik --ask-vault-
 
 ## CI/CD
 
-Le CI/CD n'est pas implémenté dans ce dépôt. Le projet migre vers [Forgejo](https://forgejo.tellserv.fr/Tellsanguis/Homelab).
+Le CI/CD n'est pas implémenté dans ce dépôt. Le projet migre vers cette [nouvelle infrastructure](https://forgejo.tellserv.fr/Tellsanguis/Homelab).
 
 Une approche CI/CD possible :
 - **Forgejo Runner** pour l'exécution des pipelines
