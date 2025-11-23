@@ -1,0 +1,16 @@
+http:
+  middlewares:
+    ratelimit:
+      rateLimit:
+        average: 100
+        burst: 50
+        period: 1s
+    secheaders:
+      headers:
+        stsSeconds: 31536000
+        forceSTSHeader: true
+    evasive:
+      rateLimit:
+        average: 3
+        burst: 5
+        period: 1s

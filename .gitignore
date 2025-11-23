@@ -1,0 +1,126 @@
+# =============================================================================
+# Secrets and credentials
+# =============================================================================
+**/.env
+**/credentials*.yaml
+**/credentials*.yml
+**/*_credentials.yaml
+**/*_credentials.yml
+**/id_ed25519
+**/id_rsa
+**/*.pem
+**/*.key
+
+# Ansible Vault password file
+.vault_pass
+
+# Secrets file (encrypt before committing or keep out of repo)
+vars/secrets.yml
+
+# Inventory file
+inventory/hosts.yml
+
+
+# =============================================================================
+# Databases
+# =============================================================================
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/*.mv.db
+**/*.sqlite
+**/*.sqlite3
+
+# =============================================================================
+# Logs
+# =============================================================================
+**/*.log
+
+# =============================================================================
+# Let's Encrypt certificates (generated at runtime)
+# =============================================================================
+stacks/traefik/letsencrypt-private/
+stacks/traefik/letsencrypt-public/
+
+# =============================================================================
+# Service data directories (runtime data, not configuration)
+# =============================================================================
+
+# Beszel
+stacks/beszel/beszel_data/
+stacks/beszel/beszel_socket/
+
+# Blog (Ghost)
+stacks/blog/ghost/content/
+
+# Clipcascade
+stacks/clipcascade/cc_users/
+
+# CrowdSec - data and downloaded hub content
+stacks/crowdsec/data/
+stacks/crowdsec/config/hub/
+stacks/crowdsec/config/local_api_credentials.yaml
+stacks/crowdsec/config/online_api_credentials.yaml
+
+# Dockge
+stacks/dockge/data/
+
+# Etesync
+stacks/etesync/data/
+
+# Gotify
+stacks/gotify/data/
+
+# Headscale
+stacks/headscale/data/
+
+# Kavita
+stacks/kavita/data/
+
+# Kopia
+stacks/kopia/cache/
+stacks/kopia/config/
+stacks/kopia/logs/
+
+# Larabouillere (Ghost)
+stacks/larabouillere/ghost/content/
+
+# Mobilizon
+stacks/mobilizon/db/
+stacks/mobilizon/tzdata/
+stacks/mobilizon/uploads/
+
+# Photoprism
+stacks/photoprism/database/
+
+# Plex
+stacks/plex/config/
+
+# Uptime Kuma
+stacks/uptime-kuma/data/
+
+# Vaultwarden
+stacks/vaultwarden/vw-data/
+
+# Yamtrack
+stacks/yamtrack/db/
+
+# =============================================================================
+# Temporary and cache files
+# =============================================================================
+**/__pycache__/
+**/*.pyc
+**/.DS_Store
+**/Thumbs.db
+**/*.tmp
+**/*.temp
+**/*.swp
+**/*.swo
+**/node_modules/
+
+# =============================================================================
+# IDE and editor files
+# =============================================================================
+.idea/
+.vscode/
+*.sublime-*

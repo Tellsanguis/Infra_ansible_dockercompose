@@ -1,0 +1,57 @@
+services:
+  paperless:
+    image: ghcr.io/paperless-ngx/paperless-ngx:2.14.7
+    container_name: paperless
+    environment:
+      - TZ=Europe/Paris
+      - PAPERLESS_REDIS=redis://redis:6379
+      - PAPERLESS_DBHOST=db
+      - PAPERLESS_DBNAME=paperless
+      - PAPERLESS_DBUSER=paperless
+      - PAPERLESS_DBPASS=paperless
+      - PAPERLESS_URL=https://paperless.tellserv.fr
+    volumes:
+      - /mnt/storage/paperless/data:/usr/src/paperless/data
+      - /mnt/storage/paperless/media:/usr/src/paperless/media
+      - /mnt/storage/paperless/export:/usr/src/paperless/export
+      - /mnt/storage/paperless/consume:/usr/src/paperless/consume
+    depends_on:
+      - db
+      - redis
+    networks:
+      - traefik_network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.paperless-prod.rule=Host(`paperless.tellserv.fr`)"
+      - "traefik.http.routers.paperless-prod.entryPoints=websecure"
+      - "traefik.http.routers.paperless-prod.tls=true"
+      - "traefik.http.routers.paperless-prod.tls.certResolver=cloudflare"
+      - "traefik.http.services.paperless.loadbalancer.server.port=8000"
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  db:
+    image: postgres:13
+    container_name: paperless-db
+    environment:
+      - POSTGRES_DB=paperless
+      - POSTGRES_USER=paperless
+      - POSTGRES_PASSWORD=paperless
+    volumes:
+      - /mnt/storage/paperless/db:/var/lib/postgresql/data
+    networks:
+      - traefik_network
+    restart: unless-stopped
+
+  redis:
+    image: redis:6
+    container_name: paperless-redis
+    volumes:
+      - /mnt/storage/paperless/redis:/data
+    networks:
+      - traefik_network
+    restart: unless-stopped
+
+networks:
+  traefik_network:
+    external: true

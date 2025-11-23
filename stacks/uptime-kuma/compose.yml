@@ -1,0 +1,27 @@
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1.23.15
+    container_name: uptime-kuma
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Paris
+    volumes:
+      - ./data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - traefik_network
+    labels:
+      - "traefik.enable=true"
+      # Local seulement
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.rule=Host(`${COMPOSE_PROJECT_NAME}.local.tellserv.fr`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.entryPoints=local"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls.certresolver=cloudflare-local"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls=true"
+      # Port interne du service
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=3001"
+      # Watchtower
+      - "com.centurylinklabs.watchtower.enable=true"
+
+networks:
+  traefik_network:
+    external: true

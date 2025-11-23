@@ -1,0 +1,104 @@
+- name: Installer paquets utilitaires
+  apt:
+    name:
+      - git
+      - curl
+      - htop
+      - firewalld
+      - mergerfs
+      - udev
+      - util-linux
+      - dnsmasq
+    state: latest
+
+- name: Désactiver systemd-resolved
+  systemd:
+    name: systemd-resolved
+    enabled: no
+    state: stopped
+
+- name: Supprimer le lien symbolique resolv.conf géré par systemd-resolved
+  file:
+    path: /etc/resolv.conf
+    state: absent
+
+- name: Créer un nouveau resolv.conf classique pointant sur dnsmasq
+  copy:
+    dest: /etc/resolv.conf
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      nameserver 127.0.0.1
+
+- name: Configurer dnsmasq pour résolution locale *.local.tellserv.fr et relay pour tellserv.fr (port 53)
+  copy:
+    dest: /etc/dnsmasq.d/tellserv.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Résolution locale pour *.local.tellserv.fr
+      address=/.local.tellserv.fr/{{ ansible_default_ipv4.address }}
+      # Serveur DNS en amont par défaut (tout autre domaine)
+      server=1.1.1.1
+      # Écoute sur le port 53
+      listen-address=127.0.0.1,{{ ansible_default_ipv4.address }},100.64.0.2
+      port=53
+      # Ne pas échouer si une interface manque
+      bind-dynamic
+  notify: Restart dnsmasq
+
+- name: Démarrer et activer dnsmasq
+  service:
+    name: dnsmasq
+    state: started
+    enabled: true
+
+- name: Configurer et démarrer firewalld
+  service:
+    name: firewalld
+    state: started
+    enabled: true
+
+- name: Ouvrir SSH (22/tcp)
+  firewalld:
+    port: 22/tcp
+    permanent: yes
+    state: enabled
+
+- name: Ouvrir HTTP (80/tcp) et HTTPS (443/tcp)
+  firewalld:
+    port: "{{ item }}"
+    permanent: yes
+    state: enabled
+  loop:
+    - 80/tcp
+    - 443/tcp
+
+- name: Ouvrir port DNSMasq (53/udp) pour la résolution locale
+  firewalld:
+    port: 53/udp
+    permanent: yes
+    state: enabled
+
+- name: Ouvrir port DNSMasq (53/tcp) pour la résolution locale
+  firewalld:
+    port: 53/tcp
+    permanent: yes
+    state: enabled
+
+- name: Ouvrir port Minecraft (25565/tcp)
+  firewalld:
+    port: 25565/tcp
+    permanent: yes
+    state: enabled
+
+- name: Reload firewalld to apply changes
+  command: firewall-cmd --reload
+
+- name: Créer le répertoire de stockage MergerFS
+  file:
+    path: /mnt/storage
+    state: directory
+    mode: '0755'

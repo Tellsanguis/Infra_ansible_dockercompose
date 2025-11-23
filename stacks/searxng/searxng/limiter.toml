@@ -1,0 +1,3 @@
+[botdetection.ip_limit]
+# Protection avancée anti-bots (tu peux activer si besoin)
+link_token = false

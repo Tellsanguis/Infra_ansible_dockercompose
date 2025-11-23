@@ -1,0 +1,53 @@
+api:
+  dashboard: true
+  insecure: false
+
+entryPoints:
+  weblocal:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: local
+          scheme: https
+          permanent: true
+
+  local:
+    address: ":443"
+    http:
+      middlewares:
+        - localonly@file
+
+certificatesResolvers:
+  cloudflare-local:
+    acme:
+      email: "mamaloubene@yahoo.fr"
+      storage: /letsencrypt/cloudflare_acme.json
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      keyType: EC256
+      dnsChallenge:
+        provider: cloudflare
+        resolvers:
+          - "1.1.1.1:53"
+          - "8.8.8.8:53"
+
+log:
+  level: DEBUG
+  filePath: "/var/log/traefik-local/traefik.log"
+
+accessLog:
+  filePath: "/var/log/traefik-local/access.log"
+  format: "json"
+
+providers:
+  docker:
+    exposedByDefault: false
+    endpoint: "unix:///var/run/docker.sock"
+    network: traefik_network
+    watch: true
+  file:
+    directory: "/etc/traefik/dynamic"
+    watch: true
+
+serversTransport:
+  insecureSkipVerify: true

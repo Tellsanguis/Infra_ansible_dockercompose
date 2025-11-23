@@ -1,0 +1,39 @@
+services:
+  etebase:
+    image: victorrds/etesync:alpine
+    container_name: etebase
+    user: 0:0
+    volumes:
+      - ./data:/data:rw
+    environment:
+      TIME_ZONE: Europe/Paris
+      SERVER: http-socket
+      SUPER_USER: ${SUPER_USER}
+      SUPER_PASS: ${SUPER_PASS}
+      ALLOWED_HOSTS: "etesync.tellserv.fr,etesync.local.tellserv.fr"
+    restart: always
+    networks:
+      - traefik_network
+    labels:
+      - traefik.enable=true
+      # Local
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.rule=Host(`${COMPOSE_PROJECT_NAME}.local.tellserv.fr`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.entryPoints=local
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls.certresolver=cloudflare-local"
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls=true
+      # Production
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.rule=Host(`${COMPOSE_PROJECT_NAME}.tellserv.fr`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.entryPoints=websecure
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls.certResolver=cloudflare
+      # - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.middlewares=tinyauth"
+
+      # Port exposé par le service
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=3735
+      # --- Flame Dashboard Integration (optionnel)
+      # --- Watchtower Auto-Update (optionnel)
+      # - "com.centurylinklabs.watchtower.enable=true"
+
+networks:
+  traefik_network:
+    external: true

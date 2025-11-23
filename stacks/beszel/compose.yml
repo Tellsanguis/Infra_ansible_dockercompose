@@ -1,0 +1,41 @@
+services:
+  beszel:
+    image: henrygd/beszel:0.8.0
+    container_name: beszel
+    restart: unless-stopped
+    volumes:
+      - ./beszel_data:/beszel_data
+      - ./beszel_socket:/beszel_socket
+    networks:
+      - traefik_network
+    labels:
+      - traefik.enable=true
+      # Accès local via Traefik
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.rule=Host(`${COMPOSE_PROJECT_NAME}.local.tellserv.fr`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.entryPoints=local
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls.certresolver=cloudflare-local"
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls=true
+      # Accès public via Traefik
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.rule=Host(`${COMPOSE_PROJECT_NAME}.tellserv.fr`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.entryPoints=websecure
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls.certResolver=cloudflare
+      # Redirection vers le port du dashboard Beszel
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=8090
+      # --- FLAME Dashboard Integration ---
+      # --- Watchtower Auto-Update ---
+      - com.centurylinklabs.watchtower.enable=true
+  beszel-agent:
+    image: henrygd/beszel-agent:0.8.0
+    container_name: beszel-agent
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./beszel_socket:/beszel_socket
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      LISTEN: /beszel_socket/beszel.sock
+      KEY: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEr/dv9DsMLknTDqlcMZDpvUDu1FdCq7z4RG+wyWDLjh"
+networks:
+  traefik_network:
+    external: true

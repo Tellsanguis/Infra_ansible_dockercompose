@@ -1,0 +1,37 @@
+services:
+  crowdsec:
+    image: crowdsecurity/crowdsec:v1.6.5
+    container_name: crowdsec
+    restart: unless-stopped
+    environment:
+      - COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve
+      - CUSTOM_HOSTNAME=crowdsec
+      - TZ=Europe/Paris
+    volumes:
+      - ./data:/var/lib/crowdsec/data/
+      - /var/log/traefik:/var/log/traefik:ro
+      - ./config:/etc/crowdsec
+      - ./config/profiles.yaml:/etc/crowdsec/profiles.yaml:ro
+      - ./config/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
+      - ./config/notifications/http.yaml:/etc/crowdsec/notifications/http.yaml:ro
+    networks:
+      - traefik_network
+
+  crowdsec-bouncer:
+    image: fbonalair/traefik-crowdsec-bouncer:0.6.0
+    container_name: crowdsec-bouncer
+    restart: unless-stopped
+    environment:
+      CROWDSEC_BOUNCER_API_KEY: ${CROWDSEC_BOUNCER_API_KEY}
+      CROWDSEC_AGENT_HOST: crowdsec:8080
+      GIN_MODE: release
+      GIN_TRUSTED_PROXIES: 172.18.0.0/16
+      TZ: Europe/Paris
+    expose:
+      - 8080
+    networks:
+      - traefik_network
+
+networks:
+  traefik_network:
+    external: true

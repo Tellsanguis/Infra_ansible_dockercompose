@@ -1,0 +1,18 @@
+use_default_settings: true
+
+server:
+  # base_url vient de SEARXNG_BASE_URL (env)
+  secret_key: "%(ENV_SEARXNG_SECRET)s"
+  limiter: true          # active le rate-limit (recommandé en public)
+  image_proxy: true
+  public_instance: false
+
+# Redis/Valkey pour le limiter
+redis:
+  url: redis://redis:6379/0
+
+ui:
+  default_locale: fr
+
+search:
+  language: "fr-FR"

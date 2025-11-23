@@ -1,0 +1,23 @@
+services:
+  loggifly:
+    image: ghcr.io/clemcer/loggifly:1.5.0
+    container_name: loggifly
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      # Notifications via Gotify (Apprise)
+      APPRISE_URL: gotify://gotify.local.tellserv.fr/AIgXWOJhf8o8McN
+      # Conteneurs surveillés
+      CONTAINERS: vaultwarden,audiobookshelf
+      # Mots-clés globaux
+      GLOBAL_KEYWORDS: error,failed login,password
+      GLOBAL_KEYWORDS_WITH_ATTACHMENT: critical
+      EXCLUDED_KEYWORDS: expired,icon
+      # Optionnel : réduction du spam
+      NOTIFICATION_COOLDOWN: 10
+      ACTION_COOLDOWN: 300
+    # Watchtower auto-update
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+networks: {}

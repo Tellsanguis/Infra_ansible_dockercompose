@@ -1,0 +1,29 @@
+services:
+  stirling-pdf:
+    container_name: stirlingpdf
+    image: frooodle/s-pdf:0.45.6-fat
+    volumes:
+      - /mnt/storage/stirlingpdf/trainingData:/usr/share/tesseract-ocr/4.00/tessdata
+      - /mnt/storage/stirlingpdf/extraConfigs:/configs
+    environment:
+      - DOCKER_ENABLE_SECURITY=true
+      - SECURITY_ENABLE_LOGIN=true
+    networks:
+      - traefik_network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.rule=Host(`${COMPOSE_PROJECT_NAME}.local.tellserv.fr`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.entryPoints=local"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls.certresolver=cloudflare-local"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.rule=Host(`${COMPOSE_PROJECT_NAME}.tellserv.fr`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.entryPoints=websecure"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls.certResolver=cloudflare"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=8080"
+      - "com.centurylinklabs.watchtower.enable=true"
+
+networks:
+  traefik_network:
+    external: true

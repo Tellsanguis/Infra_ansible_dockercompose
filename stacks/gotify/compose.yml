@@ -1,0 +1,34 @@
+services:
+  gotify:
+    image: gotify/server:2.6.1
+    container_name: gotify
+    environment:
+      - TZ=Europe/Paris
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
+    networks:
+      - traefik_network
+    labels:
+      - "traefik.enable=true"
+      # Local
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.rule=Host(`${COMPOSE_PROJECT_NAME}.local.tellserv.fr`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.entryPoints=local"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls.certresolver=cloudflare-local"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls=true"
+      # Production
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.rule=Host(`${COMPOSE_PROJECT_NAME}.tellserv.fr`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.entryPoints=websecure"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-prod.tls.certResolver=cloudflare"
+      # Port interne du service
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=80"
+
+      # Flame Dashboard Integration
+
+      # Watchtower Auto-Update
+      - "com.centurylinklabs.watchtower.enable=true"
+
+networks:
+  traefik_network:
+    external: true

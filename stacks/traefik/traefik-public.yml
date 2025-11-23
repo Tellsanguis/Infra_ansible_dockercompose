@@ -1,0 +1,58 @@
+api:
+  dashboard: true
+  insecure: false
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+
+  websecure:
+    address: ":443"
+    http:
+      middlewares:
+        - crowdsec-bouncer@docker
+        - secheaders@file
+        - ratelimit@file
+    transport:
+      respondingTimeouts:
+        idleTimeout: 300s
+
+certificatesResolvers:
+  cloudflare:
+    acme:
+      email: "mamaloubene@yahoo.fr"
+      storage: /letsencrypt/cloudflare_acme.json
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      keyType: EC256
+      dnsChallenge:
+        provider: cloudflare
+        resolvers:
+          - "1.1.1.1:53"
+          - "8.8.8.8:53"
+
+log:
+  level: DEBUG
+  filePath: "/var/log/traefik/traefik.log"
+
+accessLog:
+  filePath: "/var/log/traefik/access.log"
+  format: "json"
+
+providers:
+  docker:
+    exposedByDefault: false
+    endpoint: "unix:///var/run/docker.sock"
+    network: traefik_network
+    watch: true
+  file:
+    directory: "/etc/traefik/dynamic"
+    watch: true
+
+serversTransport:
+  insecureSkipVerify: true

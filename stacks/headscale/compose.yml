@@ -1,0 +1,52 @@
+services:
+  tailscale:
+    image: headscale/headscale:0.25
+    container_name: tailscale
+    restart: always
+    environment:
+      - TZ=Europe/Paris
+    volumes:
+      - ./conf:/etc/headscale
+      - ./data:/var/lib/headscale
+    entrypoint: headscale serve
+    networks:
+      - traefik_network
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik_network
+      # Router vers tailscale.tellserv.fr
+      - traefik.http.routers.tailscale.rule=Host(`tailscale.tellserv.fr`)
+      - traefik.http.routers.tailscale.entryPoints=websecure
+      - traefik.http.routers.tailscale.tls=true
+      - traefik.http.routers.tailscale.tls.certResolver=cloudflare
+      - traefik.http.services.tailscale.loadbalancer.server.port=8080
+      - traefik.http.services.tailscale.loadbalancer.server.scheme=http
+      # Middleware CORS pour l’admin
+      - traefik.http.middlewares.headscale-cors.headers.accesscontrolallowmethods=GET,POST,PUT,PATCH,DELETE,OPTIONS
+      - traefik.http.middlewares.headscale-cors.headers.accesscontrolallowheaders=*
+      - traefik.http.middlewares.headscale-cors.headers.accesscontrolalloworiginlist=https://headscale.local.tellserv.fr
+      - traefik.http.middlewares.headscale-cors.headers.accesscontrolmaxage=100
+      - traefik.http.middlewares.headscale-cors.headers.addvaryheader=true
+      - traefik.http.routers.tailscale.middlewares=headscale-cors
+      # UDP ports
+      - traefik.udp.services.tailscale-udp-41641.loadbalancer.server.port=41641
+      - traefik.udp.services.tailscale-udp-3478.loadbalancer.server.port=3478
+  headscale:
+    image: goodieshq/headscale-admin:0.25
+    container_name: headscale
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik_network
+      # Router vers headscale.local.tellserv.fr
+      - traefik.http.routers.headscale.rule=Host(`headscale.local.tellserv.fr`)
+      - traefik.http.routers.headscale.entryPoints=local
+      - traefik.http.routers.headscale.tls=true
+      - traefik.http.routers.headscale.tls.certResolver=cloudflare-local
+      - traefik.http.services.headscale.loadbalancer.server.port=80
+      - traefik.http.services.headscale.loadbalancer.server.scheme=http
+networks:
+  traefik_network:
+    external: true

@@ -1,0 +1,52 @@
+- name: Ajouter la source noble-backports
+  copy:
+    dest: /etc/apt/sources.list.d/noble-backports.sources
+    content: |
+      Types: deb
+      URIs: http://archive.ubuntu.com/ubuntu
+      Suites: noble-backports
+      Components: main universe
+      Architectures: amd64
+
+- name: Installer les outils nécessaires à add-apt-repository
+  apt:
+    name: software-properties-common
+    state: present
+    update_cache: yes
+
+- name: Ajouter le PPA pitti/cockpit-files
+  apt_repository:
+    repo: ppa:pitti/cockpit-files
+    state: present
+
+- name: Mettre à jour la liste des paquets après ajout des sources
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Installer Cockpit depuis noble-backports
+  apt:
+    name: cockpit
+    state: latest
+    default_release: noble-backports
+
+- name: Installer cockpit-files depuis le PPA
+  apt:
+    name: cockpit-files
+    state: latest
+
+- name: Activer Cockpit
+  service:
+    name: cockpit
+    state: started
+    enabled: true
+
+- name: Créer le fichier cockpit.conf pour Traefik
+  copy:
+    dest: /etc/cockpit/cockpit.conf
+    content: |
+      [WebService]
+      Origins = https://cockpit.local.tellserv.fr
+      ProtocolHeader = X-Forwarded-Proto
+      AllowUnencrypted = true
+  notify: Redémarrer Cockpit

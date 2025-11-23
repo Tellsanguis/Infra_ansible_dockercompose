@@ -1,0 +1,4 @@
+- name: Redémarrer Cockpit
+  service:
+    name: cockpit
+    state: restarted

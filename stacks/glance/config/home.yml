@@ -1,0 +1,184 @@
+- name: Accueil
+  columns:
+    - size: small
+      widgets:
+        - type: calendar
+
+        - type: rss
+          title: Journal du serveur
+          style: vertical-list
+          limit: 10
+          collapse-after: 5
+          feeds:
+            - url: http://rss/index.xml
+
+    - size: full
+      widgets:
+        - type: search
+          title: Recherche Whoogle
+          search-engine: https://whoogle.tellserv.fr/search?q={QUERY}
+          placeholder: Recherche sur Internet…
+          new-tab: false
+          autofocus: false
+
+        - type: docker-containers
+          title: Conteneurs en cours
+          limit: 10
+          hide-by-default: true
+          $include: includes/containers.yml
+
+    - size: small
+      widgets:
+        - type: weather
+          title: Météo à Domfront
+          location: Domfront, France
+          units: metric
+          hour-format: 24h
+
+        - type: server-stats
+          title: Ressources serveur
+          show-network: true
+          servers:
+            - type: local
+              hide-mountpoints-by-default: true
+              mountpoints:
+                "/mnt/storage":
+                  name: Stockage principal
+                  hide: false
+
+        - type: custom-api
+          title: Minecraft
+          url: https://api.mcstatus.io/v2/status/java/minecraft.tellserv.fr
+          cache: 30s
+          template: |
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="width:40px; height:40px; flex-shrink:0; border-radius:4px; display:flex; justify-content:center; align-items:center; overflow:hidden;">
+                {{ if .JSON.Bool "online" }}
+                  <img src="{{ .JSON.String "icon" | safeURL }}" width="64" height="64" style="object-fit:contain;">
+                {{ else }}
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width:32px; height:32px; opacity:0.5;">
+                    <path fill-rule="evenodd" d="M1 5.25A2.25 2.25 0 0 1 3.25 3h13.5A2.25 2.25 0 0 1 19 5.25v9.5A2.25 2.25 0 0 1 16.75 17H3.25A2.25 2.25 0 0 1 1 14.75v-9.5Zm1.5 5.81v3.69c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-2.69l-2.22-2.219a.75.75 0 0 0-1.06 0l-1.91 1.909.47.47a.75.75 0 1 1-1.06 1.06L6.53 8.091a.75.75 0 0 0-1.06 0l-2.97 2.97ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd" />
+                  </svg>
+                {{ end }}
+              </div>
+
+              <div style="flex-grow:1; min-width:0;">
+                <a class="size-h4 block text-truncate color-highlight">
+                  {{ .JSON.String "host" }}
+                  {{ if .JSON.Bool "online" }}
+                  <span
+                    style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--color-positive); display: inline-block; vertical-align: middle;"
+                    data-popover-type="text"
+                    data-popover-text="Online"
+                  ></span>
+                  {{ else }}
+                  <span
+                    style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--color-negative); display: inline-block; vertical-align: middle;"
+                    data-popover-type="text"
+                    data-popover-text="Offline"
+                  ></span>
+                  {{ end }}
+                </a>
+
+                <ul class="list-horizontal-text">
+                  <li>
+                    {{ if .JSON.Bool "online" }}
+                    <span>{{ .JSON.String "version.name_clean" }}</span>
+                    {{ else }}
+                    <span>Offline</span>
+                    {{ end }}
+                  </li>
+                  {{ if .JSON.Bool "online" }}
+                  <li data-popover-type="html">
+                    <div data-popover-html>
+                      {{ range .JSON.Array "players.list" }}{{ .String "name_clean" }}<br>{{ end }}
+                    </div>
+                    <p style="display:inline-flex;align-items:center;">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6" style="height:1em;vertical-align:middle;margin-right:0.5em;">
+                        <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
+                      </svg>
+                      {{ .JSON.Int "players.online" | formatNumber }}/{{ .JSON.Int "players.max" | formatNumber }} joueurs
+                    </p>
+                  </li>
+                  {{ else }}
+                  <li>
+                    <p style="display:inline-flex;align-items:center;">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6" style="height:1em;vertical-align:middle;margin-right:0.5em;opacity:0.5;">
+                        <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
+                      </svg>
+                      0 joueurs
+                    </p>
+                  </li>
+                  {{ end }}
+                </ul>
+              </div>
+            </div>
+
+        - type: custom-api
+          title: Bibliothèques Plex
+          cache: 5m
+          options:
+            base-url: https://plex.tellserv.fr
+            api-key: ${secret:plex-token}
+          template: |
+            {{ $baseURL := .Options.StringOr "base-url" "" }}
+            {{ $apiKey := .Options.StringOr "api-key" "" }}
+
+            {{ define "errorMsg" }}
+              <div class="widget-error-header">
+                <div class="color-negative size-h3">Erreur</div>
+                <svg class="widget-error-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                </svg>
+              </div>
+              <p class="break-all">{{ . }}</p>
+            {{ end }}
+
+            {{ if or (eq $baseURL "") (eq $apiKey "") }}
+              {{ template "errorMsg" "Paramètres manquants : base-url ou api-key" }}
+            {{ else }}
+              {{ $sectionsURL := printf "%s/library/sections" $baseURL }}
+              {{ $sectionsCall := newRequest $sectionsURL
+                  | withHeader "Accept" "application/json"
+                  | withHeader "X-Plex-Token" $apiKey
+                  | getResponse }}
+
+              {{ if $sectionsCall.JSON.Exists "MediaContainer.Directory" }}
+                {{ $sections := $sectionsCall.JSON.Array "MediaContainer.Directory" }}
+
+                <div class="cards" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px;">
+                {{ range $section := $sections }}
+                  {{ $sectionID := $section.String "key" }}
+                  {{ $title := $section.String "title" }}
+                  {{ $type := $section.String "type" }}
+
+                  {{ $color := "#666" }}
+                  {{ if eq $type "movie" }}
+                    {{ $color = "#e57373" }}
+                  {{ else if eq $type "show" }}
+                    {{ $color = "#7986cb" }}
+                  {{ else if eq $type "artist" }}
+                    {{ $color = "#81c784" }}
+                  {{ end }}
+
+                  {{ $countURL := printf "%s/library/sections/%s/all" $baseURL $sectionID }}
+                  {{ $countCall := newRequest $countURL
+                      | withParameter "X-Plex-Token" $apiKey
+                      | withHeader "Accept" "application/json"
+                      | getResponse }}
+
+                  {{ if $countCall.JSON.Exists "MediaContainer.size" }}
+                    {{ $count := $countCall.JSON.Int "MediaContainer.size" }}
+                    <div class="card" style="background-color: {{ $color }}; color: black; text-align: center; padding: 20px; border-radius: 12px;">
+                      <div style="font-size: 1.2rem; font-weight: bold;">{{ $title }}</div>
+                      <div style="font-size: 2.4rem; font-weight: bold; margin-top: 0.5em;">
+                        {{ $count }}
+                      </div>
+                    </div>
+                  {{ end }}
+                {{ end }}
+                </div>
+              {{ else }}
+                {{ template "errorMsg" "Impossible de récupérer les bibliothèques Plex" }}
+              {{ end }}
+            {{ end }}

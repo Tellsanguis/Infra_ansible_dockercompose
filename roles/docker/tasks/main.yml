@@ -1,0 +1,67 @@
+- name: Mettre à jour cache apt
+  apt:
+    update_cache: yes
+- name: Installer les prérequis
+  apt:
+    name:
+      - ca-certificates
+      - curl
+    state: present
+- name: Créer le répertoire keyrings
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+- name: Télécharger la clé GPG Docker
+  get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+- name: Configurer le dépôt Docker
+  shell: |
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+    $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+    tee /etc/apt/sources.list.d/docker.list > /dev/null
+  args:
+    executable: /bin/bash
+    creates: /etc/apt/sources.list.d/docker.list
+- name: Mettre à jour cache apt après ajout du dépôt
+  apt:
+    update_cache: yes
+- name: Installer Docker Engine et plugins
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: latest
+- name: Activer et démarrer le service Docker
+  systemd:
+    name: docker
+    enabled: true
+    state: started
+- name: Ajouter l'utilisateur au groupe docker (optionnel)
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes
+
+- name: Créer le réseau Docker pour Traefik
+  shell: docker network create traefik_network || true
+  become: yes
+
+- name: Créer le répertoire pour les logs Traefik
+  file:
+    path: /var/log/traefik
+    state: directory
+    mode: '0755'
+  become: yes
+
+- name: Créer le répertoire pour les certificats Let's Encrypt
+  file:
+    path: /etc/letsencrypt/traefik
+    state: directory
+    mode: '0755'
+  become: yes

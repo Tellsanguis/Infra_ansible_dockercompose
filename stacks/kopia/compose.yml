@@ -1,0 +1,46 @@
+services:
+  kopia:
+    image: kopia/kopia:0.22.0
+    container_name: kopia
+    user: "0:0"
+    restart: unless-stopped
+    privileged: true
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    devices:
+      - /dev/fuse:/dev/fuse:rwm
+    command:
+      - server
+      - start
+      - --insecure
+      - --disable-csrf-token-checks
+      - --address=0.0.0.0:51515
+      - --server-username=${KOPIA_SERVER_USERNAME}
+      - --server-password=${KOPIA_SERVER_PASSWORD}
+    volumes:
+      - /mnt/storage/kopia/tmp:/tmp:shared
+      - /mnt/storage/kopia/repository:/repository
+      - ./config:/app/config
+      - ./cache:/app/cache
+      - ./logs:/app/logs
+      - /:/data:ro
+    environment:
+      KOPIA_PASSWORD: ${KOPIA_PASSWORD}
+      TZ: Europe/Paris
+      USER: ${USER}
+    networks:
+      - traefik_network
+    labels:
+      - "traefik.enable=true"
+      # Accès local uniquement via Traefik
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.rule=Host(`${COMPOSE_PROJECT_NAME}.local.tellserv.fr`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.entryPoints=local"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls.certresolver=cloudflare-local"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-local.tls=true"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=51515"
+
+networks:
+  traefik_network:
+    external: true
