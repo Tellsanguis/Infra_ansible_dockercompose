@@ -88,12 +88,6 @@
     permanent: yes
     state: enabled
 
-- name: Ouvrir port Minecraft (25565/tcp)
-  firewalld:
-    port: 25565/tcp
-    permanent: yes
-    state: enabled
-
 - name: Reload firewalld to apply changes
   command: firewall-cmd --reload
 
